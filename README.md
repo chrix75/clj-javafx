@@ -29,7 +29,7 @@ Fetch the code, either by downloading the archive or by forking the repository.
 Go to the project folder and run
 
 ```
-lein test
+lein test :integration
 ```
 
 ## Usage in REPl
@@ -46,52 +46,54 @@ Code example (in your REPL, you can remove comments):
 ; The first need is to launch the JavaFX thread.
 ; This launching is interesting if we have a scene for displaying.
 
-(require 'clj-javafx.wrapper) ; you could use the use function to avoid repeat the namespace for each call
+(require '[clj-javafx.wrapper :as jfx]) ; you could use the use function to avoid repeat the namespace for each call
 (import 'javafx.scene.control.Button)
 (import 'javafx.scene.paint.Color)
 
-(clj-javafx.wrapper/launch :width 300 :height 300)
+(jfx/launch :width 300 :height 300)
 
 ; NOTE: The launch method doesn't show the scene. Thus, the caller can make all the changes he wants before displaying.
 
 ; show the main window
-(clj-javafx.wrapper/show)
+(jfx/show)
 
 ; get the primary stage (aka the one is passed in the hood to the start function of the extended Application class
-@clj-javafx.wrapper/primary-stage
+(jfx/component :primary-stage)
 
 ; get the root group (the one is created in the launch method to contain the scene
-@clj-javafx.wrapper/primary-root
+(jfx/component :primary-root)
 
 ; get the primary scene
-@clj-javafx.wrapper/primary-scene
+(jfx/component :primary-scene)
 
 ; interact with the JavaFX environment
-(clj-javafx.wrapper/with-javafx
+(jfx/with-javafx
   (let [btn (Button.)]
-    (.setLayoutX btn 100)
-    (.setLayoutY btn 150)
-    (.setText btn "Hello World!")
-    (clj-javafx.wrapper/add-child @clj-javafx.wrapper/primary-root btn)))
+    (doto btn
+      (.setLayoutX 100)
+      (.setLayoutY 150)
+      (.setText "Hello World!"))
+      (jfx/add-child :primary-root :my-button btn)))
 
 ; in the following call, the let variable is defined as a function argument
-(clj-javafx.wrapper/with-javafx-let
+(jfx/with-javafx-let
   [btn (Button.)]
-  (.setLayoutX btn 100)
-  (.setLayoutY btn 80)
-  (.setText btn "Hello World!")
-  (clj-javafx.wrapper/add-child @clj-javafx.wrapper/primary-root btn))
+  (doto btn
+    (.setLayoutX 100)
+    (.setLayoutY 80)
+    (.setText "Hello World!"))
+  (jfx/add-child :primary-root :my-button btn))
 
 ```
 
-## Other calls of clj-javafx.wrapper/launch
+## Other calls of jfx/launch
 
 ```clojure
-(clj-javafx.wrapper/launch) ; the scene is created but we can't see it because its size is set to 0
-(clj-javafx.wrapper/launch :width 300 :height 300)
-(clj-javafx.wrapper/launch :width 300 :height 300 :depth-buffer true)
-(clj-javafx.wrapper/launch :width 300 :height 300 :paint Color/BLACK)
-(clj-javafx.wrapper/launch :paint Color/BLACK)
+(jfx/launch) ; the scene is created but we can't see it because its size is set to 0
+(jfx/launch :width 300 :height 300)
+(jfx/launch :width 300 :height 300 :depth-buffer true)
+(jfx/launch :width 300 :height 300 :paint Color/BLACK)
+(jfx/launch :paint Color/BLACK)
 ```
 
 
