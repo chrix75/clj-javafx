@@ -4,12 +4,6 @@
            [javafx.application Application Platform]
            [javafx.scene Scene Group]))
 
-;; REMOVE =>
-(defonce primary-stage (promise))
-(defonce primary-root (promise))
-(defonce primary-scene (promise))
-(defonce fxapp (promise))
-;; <= REMOVE
 
 (defonce ready? (promise))
 
@@ -17,6 +11,8 @@
                            :primary-root nil
                            :primary-scene nil
                            :fxapp nil}))
+
+(defonce _children (atom {}))
 
 (defmacro with-javafx 
   "Runs a body inside the JavaFX thread."
@@ -44,9 +40,8 @@
   "Starts the JavaFX thread. This function should not be called directly.\n
    Don't forget you cann launch the JavaFX Application more one time."
   []
-  (deliver fxapp (future (Application/launch javafx.clojure.FXApplication (into-array String []))))
-  (swap! _components assoc :primary-stage (javafx.clojure.FXApplication/getCurrentStage))
-)
+  (swap! _components assoc :fxapp (future (Application/launch javafx.clojure.FXApplication (into-array String []))))
+  (swap! _components assoc :primary-stage (javafx.clojure.FXApplication/getCurrentStage)))
 
 (defn launch-app
   "Launches a basic JavaFX application. This function lays on the FXApplication to work.\n
@@ -116,6 +111,10 @@
   [c]
   (c @_components))
 
+(defn update-children
+  [parent-sym child-sym]
+  (swap! _children assoc parent-sym (conj (parent-sym _children) child-sym)))
+
 (defn add-child
   "Adds a component to a container (like group). The parent container is defined by its symbol.
 The first known parent when launching is the primary-group (so defined by the symbol :primary-group).
@@ -123,11 +122,17 @@ The child component should be define by a symbol too. But it's not mandatory."
   ([parent-sym child-sym child]
      (when-let [parent (component parent-sym)]
        (-> (.getChildren parent) (.add child))
-       (swap! _components assoc child-sym child)))
+       (swap! _components assoc child-sym child)
+       (update-children parent-sym child-sym)
+       ))
 
   ([parent-sym child]
      (when-let [parent (component parent-sym)]
        (-> (.getChildren parent) (.add child)))))
 
 
+(defn children 
+  "Returns a sequence of the children for the given node. The node is defined by its symbol."
+  [parent-sym]
+  (parent-sym @_children))
 

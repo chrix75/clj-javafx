@@ -3,6 +3,23 @@
   (:require [clj-javafx.wrapper :as jfx])
   (:import javafx.scene.control.Button))
 
+(deftest ^:integration show-window-with-button
+  (jfx/launch :width 500 :height 500)
+
+  (jfx/with-javafx-let
+    [btn (Button.)]
+
+    (doto btn
+        (.setLayoutX 100)
+        (.setLayoutY 150)
+        (.setText "Hello World!"))
+      
+      (jfx/add-child :primary-root ::my-button btn)
+    (jfx/show))
+
+  (jfx/wait-stopping))
+
+
 (deftest test-launching-initialization
   (jfx/launch)
   (is (not (nil? (jfx/component :primary-root))))
@@ -27,23 +44,11 @@
     (if @add-done?
       (do 
         (is (= 1 (count (.getChildren (jfx/component :primary-root)))))
+        (is (= 1 (count (jfx/children :primary-root))))
+        (is (= ::my-button (first (jfx/children :primary-root))))
         (is (= "Button" (.getText (first (.getChildren (jfx/component :primary-root))))))
         (is (= "Button" (.getText (jfx/component ::my-button)))))
       
       (throw (Error. "Invalid state")))))
 
-(deftest ^:integration show-window-with-button
-  (jfx/launch :width 500 :height 500)
 
-  (jfx/with-javafx-let
-    [btn (Button.)]
-
-    (doto btn
-        (.setLayoutX 100)
-        (.setLayoutY 150)
-        (.setText "Hello World!"))
-      
-      (jfx/add-child :primary-root ::my-button btn)
-    (jfx/show))
-
-  (jfx/wait-stopping))
