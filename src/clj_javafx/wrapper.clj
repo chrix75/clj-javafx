@@ -40,6 +40,15 @@
   "Starts the JavaFX thread. This function should not be called directly.\n
    Don't forget you cann launch the JavaFX Application more one time."
   []
+
+  (reset! _components {:primary-stage nil
+                       :primary-root nil
+                       :primary-scene nil
+                       :fxapp nil})
+
+  (reset! _children {})
+
+
   (swap! _components assoc :fxapp (future (Application/launch javafx.clojure.FXApplication (into-array String []))))
   (swap! _components assoc :primary-stage (javafx.clojure.FXApplication/getCurrentStage)))
 
@@ -47,7 +56,9 @@
   "Launches a basic JavaFX application. This function lays on the FXApplication to work.\n
    You can't call this function more one time. The second time, nothing will happen."
   ([]
+
      (start-fxapplication)
+
 
      (with-javafx
        (swap! _components assoc :primary-root (Group.))
@@ -112,8 +123,9 @@
   (c @_components))
 
 (defn update-children
+  "Updates the children table. This table is a map where the key is the parent and the value is a children list."
   [parent-sym child-sym]
-  (swap! _children assoc parent-sym (conj (parent-sym _children) child-sym)))
+  (swap! _children assoc parent-sym (conj (parent-sym @_children) child-sym)))
 
 (defn add-child
   "Adds a component to a container (like group). The parent container is defined by its symbol.
@@ -123,8 +135,7 @@ The child component should be define by a symbol too. But it's not mandatory."
      (when-let [parent (component parent-sym)]
        (-> (.getChildren parent) (.add child))
        (swap! _components assoc child-sym child)
-       (update-children parent-sym child-sym)
-       ))
+       (update-children parent-sym child-sym)))
 
   ([parent-sym child]
      (when-let [parent (component parent-sym)]
@@ -135,4 +146,24 @@ The child component should be define by a symbol too. But it's not mandatory."
   "Returns a sequence of the children for the given node. The node is defined by its symbol."
   [parent-sym]
   (parent-sym @_children))
+
+(defn children?
+  "Tells if a node has at least one child"
+  [node]
+  (not (empty? (children node))))
+
+
+(defn find-descendants
+  "Finds the descendants of a node. It's an utility function for the function descendants."
+  [node descendants]
+  (if-not (children? node)
+    descendants
+    (let [children (children node)]
+      (reduce #(find-descendants %2 %1) 
+              (into descendants children)  children))))
+
+(defn descendants
+  "Returns a vector with all the descendants of a node."
+  [node]
+  (find-descendants node []))
 
