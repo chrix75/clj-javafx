@@ -163,7 +163,7 @@ The child component should be define by a symbol too. But it's not mandatory."
               (into descendants children)  children))))
 
 (defn descendants
-  "Returns a vector with all the descendants of a node."
+  "Returns a sequence with all the descendants of a node."
   [node]
-  (find-descendants node []))
+  (find-descendants node '()))
 
