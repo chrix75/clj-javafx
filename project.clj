@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [local.oracle/javafxrt "2.2.3"]]
-  :aot [clj-javafx.application]
+  :aot [clj-javafx.application clj-javafx.component]
   :test-selectors {:default (complement :integration)
                      :integration :integration
                      :all (constantly true)})

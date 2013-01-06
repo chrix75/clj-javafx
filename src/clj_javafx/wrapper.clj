@@ -29,6 +29,8 @@
   `(let ~bindings
      (with-javafx ~@body)))
 
+
+
 (defn wait-stopping
   "Checks if the application is stopped."
   []

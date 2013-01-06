@@ -2,6 +2,9 @@
 
 A wrapper to develop application with Clojure and JavaFX. This project lets you manipulate JavaFX in the REPL.
 
+*** Remark: You have more information and code examples in the Wiki pages ***
+
+
 ## Prerequisites
 
 To use this project, you need to have JavaFX 2.x on your computer. For that, you need to install Java JDK v7 (now, it contains JavaFX) or install only JavaFX.
