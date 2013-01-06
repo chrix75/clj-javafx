@@ -14,6 +14,9 @@
 
 (defonce _children (atom {}))
 
+(defonce _parents (atom {}))
+
+
 (defmacro with-javafx 
   "Runs a body inside the JavaFX thread."
   [& body]
@@ -125,7 +128,8 @@
 (defn update-children
   "Updates the children table. This table is a map where the key is the parent and the value is a children list."
   [parent-sym child-sym]
-  (swap! _children assoc parent-sym (conj (parent-sym @_children) child-sym)))
+  (swap! _children assoc parent-sym (conj (parent-sym @_children) child-sym))
+  (swap! _parents assoc child-sym parent-sym))
 
 (defn add-child
   "Adds a component to a container (like group). The parent container is defined by its symbol.
@@ -152,7 +156,6 @@ The child component should be define by a symbol too. But it's not mandatory."
   [node]
   (not (empty? (children node))))
 
-
 (defn find-descendants
   "Finds the descendants of a node. It's an utility function for the function descendants."
   [node descendants]
@@ -166,4 +169,26 @@ The child component should be define by a symbol too. But it's not mandatory."
   "Returns a sequence with all the descendants of a node."
   [node]
   (find-descendants node '()))
+
+(defn remove-from-children
+  [parent-sym child-sym]
+  (swap! _children assoc parent-sym (remove #(not= % child-sym) (get @_children parent-sym))))
+
+(defn remove-node
+  "Remove a child component from parent. The removed node is defined by its symbole."
+  [node-sym]
+  (let [child (component node-sym)
+        parent (.getParent child)]
+    
+    ;; Removes the child from the JavaFX components tree
+    (if-not (nil? parent)
+      (-> parent (.getChildren) (.remove child)))
+
+    ;; Manages the change in the wrapper
+    (swap! _components dissoc node-sym)
+    (doseq [d (descendants node-sym)]
+      (remove-node d))
+
+    (when-let [parent-sym (get @_parents node-sym)]
+      (remove-from-children parent-sym node-sym))))
 
